@@ -80,10 +80,30 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
   
-  # df <- reactiveValues(main = NULL)
-  # 
-  # 
-  # 
+  df <- reactiveValues(main = as.data.frame(NULL))
+  
+  observeEvent(input$agregar,{
+    if(input$select == 1){
+      df$main[1:1000,1] <- as.data.frame(rnorm(1000,input$mediaN,input$sigmaN))
+      colnames(df$main)[1] <- input$nomd
+    }else{
+      df$main <- NULL
+    }
+  })
+  
+  output$grafica <- renderPlot({
+    # a <- as.numeric(input$mediaN)
+    # b <- as.numeric(input$sigmaN)
+    # df$main <- as.data.frame(rnorm(100,0,1))
+    if (dim(df$main)[1] == 0){
+      
+    }else{
+    ggplot(df$main,aes(x=df$main[,1])) + geom_histogram(bins = 20) + ggtitle(input$nomd)
+    }
+  })
+
+
+
   # observeEvent(input$agregar,{
   #   curdata <- reactive({
   #     dist <- switch(input$select, 
