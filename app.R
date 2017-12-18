@@ -90,7 +90,7 @@ server <- function(input, output, session) {
   
   output$grafica <- renderPlot({
     
-    df <- data.frame(x=curdata$variable1)
+    df <- data.frame(x=curdata[,input$nomd])
     
     ggplot(df,aes(x=x)) + geom_histogram(bins = 20) + ggtitle(input$nomd)
     
@@ -99,7 +99,7 @@ server <- function(input, output, session) {
   curdata <- reactiveValues()
   observeEvent(input$agregar,{
     
-    curdata$variable1 <- switch(input$select,
+    curdata[,input$nomd] <- switch(input$select,
              'rnorm' = rnorm(1000,input$mediaN,input$sigmaN),
              'normt' = rnorm(1000,input$mediaN,input$sigmaN),
              'lognorm' = rnorm(1000,input$mediaN,input$sigmaN),
