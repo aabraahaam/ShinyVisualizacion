@@ -93,11 +93,10 @@ server <- function(input, output, session) {
     
     req(curdata$variable1)
     for (i in curdata$nombre){
-    df <- data.frame(i=curdata$variable1)
-    g <- ggplot(df,aes(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
-    #grid.arrange(g)
-    g
+      df <- data.frame(i=curdata$variable1)
+      g <-ggplot(df,aes(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
     }
+    multiplot(g)
   })
 
   curdata <- reactiveValues()
