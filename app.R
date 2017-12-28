@@ -3,6 +3,7 @@ library(shinydashboard)
 library(gridExtra)
 library(ggplot2)
 library(triangle)
+library(dbplyr)
 
 ui <- dashboardPage(
   dashboardHeader(),
@@ -15,7 +16,7 @@ ui <- dashboardPage(
     conditionalPanel(
       condition = "input.radio == '1'",
       textInput('nomd','Nombre de la distribución'),
-      selectInput("select", label = "Distribución", 
+      selectInput("select", label = "Distribución",selectize = T, 
                   choices = list( " " = 9,"Normal" = 'rnorm',
                                  "Normal Truncada" ='normt', 
                                  "Lognormal" = 'lognorm',
@@ -90,16 +91,16 @@ server <- function(input, output, session) {
   
   output$grafica <- renderPlot({
     
-    df <- data.frame(x=curdata[,input$nomd])
-    
-    ggplot(df,aes(x=x)) + geom_histogram(bins = 20) + ggtitle(input$nomd)
-    
+    req(curdata$variable1)
+    df <- data.frame(x=curdata$variable1)
+    g <- ggplot(df,aes(x=x)) + geom_histogram(bins = 20) + ggtitle(curdata$nombre)
+    multiplot(g)
   })
 
   curdata <- reactiveValues()
   observeEvent(input$agregar,{
-    
-    curdata[,input$nomd] <- switch(input$select,
+    curdata$nombre <- c(input$nomd,curdata$nombre)
+    curdata$variable1 <- switch(input$select,
              'rnorm' = rnorm(1000,input$mediaN,input$sigmaN),
              'normt' = rnorm(1000,input$mediaN,input$sigmaN),
              'lognorm' = rnorm(1000,input$mediaN,input$sigmaN),
