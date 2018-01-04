@@ -35,3 +35,17 @@ colnames(df)<-hombres
 df <- NULL
 df %>% mutate(i = rnorm(100))
 g
+nombres<-c()
+nombres<- c(nombres,'ho')
+
+###idea para realizar multiples graficas
+x='h'
+matriz <- matrix(ncol=0,nrow = 1000)
+matriz <- cbind(matriz,x=rpois(1000,2))
+colnames(matriz)<-nombres
+df<-as.data.frame(matriz)
+g <-ggplot(df,aes_string(x='rnorm')) + geom_histogram(bins = 20) + ggtitle('rnorm')
+g
+df<-data.frame()
+df<-data.frame(df,rnorm(100))
+df <- cbind.data.frame(df,rnorm(100))

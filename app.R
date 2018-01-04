@@ -5,7 +5,6 @@ library(ggplot2)
 library(triangle)
 library(dbplyr)
 library(dplyr)
-
 ui <- dashboardPage(
   dashboardHeader(),
   dashboardSidebar(
@@ -83,7 +82,8 @@ ui <- dashboardPage(
 
   ),
   dashboardBody(
-    plotOutput('grafica')
+    plotOutput('grafica'),
+    verbatimTextOutput('texto')
   )
 )
 
@@ -93,18 +93,29 @@ server <- function(input, output, session) {
   output$grafica <- renderPlot({
     
     req(curdata$variable1)
-    for (i in curdata$nombre){
-      df <- data.frame(df,i=curdata$variable1)
-      g <-ggplot(df,aes(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
-    }
-    
-    multiplot(g)
+    # 
+    # print(curdata$nombre)
+    # print(colnames(curdata$matriz))
+    # df <- data.frame(df,i=curdata$variable1)
+    # colnames(curdata$matriz)<-curdata$nombre
+    # print(colnames(matriz))
+    df <- as.data.frame(curdata$matriz)
+    plist <-list()
+    n<-1
+     for (i in curdata$nombre){
+       print(n)
+       g <-ggplot(df,aes_string(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
+       plist[[n]] <- g
+       n <- n+1
+     }
+
+     grid.arrange(grobs=plist)
     
   })
 
-  curdata <- reactiveValues()
+  curdata <- reactiveValues(matriz=matrix(ncol=0,nrow = 1000))
   observeEvent(input$agregar,{
-    curdata$nombre <- c(input$nomd,curdata$nombre)
+    curdata$nombre <- c(curdata$nombre,input$nomd)
     curdata$variable1 <- switch(input$select,
              'rnorm' = rnorm(1000,input$mediaN,input$sigmaN),
              'normt' = rnorm(1000,input$mediaN,input$sigmaN),
@@ -116,9 +127,14 @@ server <- function(input, output, session) {
              'runif' = runif(1000,input$aUni,input$bUni),
              'rtriang' = rtriangle(1000,input$aTri,input$bTri,input$cTri),
              NULL)
-      
+    curdata$matriz <- cbind(curdata$matriz,curdata$variable1)
+    colnames(curdata$matriz)<-curdata$nombre
+    
   })
-  
+  output$texto <- renderText({
+    req(curdata$nombre)
+    curdata$nombre
+    })
 }
 
 shinyApp(ui, server)
