@@ -4,6 +4,7 @@ library(gridExtra)
 library(ggplot2)
 library(triangle)
 library(dbplyr)
+library(dplyr)
 
 ui <- dashboardPage(
   dashboardHeader(),
@@ -93,10 +94,12 @@ server <- function(input, output, session) {
     
     req(curdata$variable1)
     for (i in curdata$nombre){
-      df <- data.frame(i=curdata$variable1)
+      df <- data.frame(df,i=curdata$variable1)
       g <-ggplot(df,aes(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
     }
+    
     multiplot(g)
+    
   })
 
   curdata <- reactiveValues()
