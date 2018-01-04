@@ -18,7 +18,8 @@ df <-0
 
 hombres <- c('x','y','z')
 plist <-list()
-n<-1
+n<-2
+plist[[n]]<-c('hola2')
 for (i in hombres){
   print(n)
   g <- ggplot(df,aes_string(i))+geom_histogram(bins=10)

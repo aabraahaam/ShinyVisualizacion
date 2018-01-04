@@ -5,6 +5,7 @@ library(ggplot2)
 library(triangle)
 library(dbplyr)
 library(dplyr)
+#ui----
 ui <- dashboardPage(
   dashboardHeader(),
   dashboardSidebar(
@@ -72,7 +73,7 @@ ui <- dashboardPage(
         numericInput('cTri','Moda',6)
       )
     ),
-    #Agregar cálculo
+    #Agregar cálculo----
     conditionalPanel(
       condition = "input.radio == '2'",
       textInput('nomf','Nombre del cálculo'),
@@ -81,6 +82,7 @@ ui <- dashboardPage(
     
 
   ),
+  #Cuerpo----
   dashboardBody(
     plotOutput('grafica'),
     verbatimTextOutput('texto')
@@ -93,12 +95,6 @@ server <- function(input, output, session) {
   output$grafica <- renderPlot({
     
     req(curdata$variable1)
-    # 
-    # print(curdata$nombre)
-    # print(colnames(curdata$matriz))
-    # df <- data.frame(df,i=curdata$variable1)
-    # colnames(curdata$matriz)<-curdata$nombre
-    # print(colnames(matriz))
     df <- as.data.frame(curdata$matriz)
     plist <-list()
     n<-1
@@ -132,8 +128,12 @@ server <- function(input, output, session) {
     
   })
   output$texto <- renderText({
-    req(curdata$nombre)
+    # req(curdata$nombre)
+    req(input$form)
     curdata$nombre
+    input$agregar
+    df <- as.data.frame(curdata$matriz)
+    eval(parse(text=input$form),envir = df)
     })
 }
 
