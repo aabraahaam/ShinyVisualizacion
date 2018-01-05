@@ -13,6 +13,7 @@ ui <- dashboardPage(
                  choices = list("Variable" = 1, "Cálculo" = 2), 
                  selected = 1, inline = T),
     actionButton('agregar','Agregar',icon = icon('plus')),
+    actionButton('agg','Agg',icon = icon('plus')),
     #Agregar variable
     conditionalPanel(
       condition = "input.radio == '1'",
@@ -85,12 +86,16 @@ ui <- dashboardPage(
   #Cuerpo----
   dashboardBody(
     plotOutput('grafica'),
+    plotOutput('grafica2'),
     verbatimTextOutput('texto')
   )
 )
 
 #server----
 server <- function(input, output, session) {
+  
+  curdata <- reactiveValues(matriz=matrix(ncol=0,nrow = 1000),
+                            matrizCalc=matrix(ncol=0,nrow = 1000) )
   
   output$grafica <- renderPlot({
     
@@ -108,8 +113,32 @@ server <- function(input, output, session) {
      grid.arrange(grobs=plist)
     
   })
+  
+  output$grafica2 <- renderPlot({
+    
+    req(curdata$variable2)
+    df <- as.data.frame(curdata$matrizCalc)
+    plist <-list()
+    n<-1
+    for (i in curdata$nomF){
+      print(n)
+      g <-ggplot(df,aes_string(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
+      plist[[n]] <- g
+      n <- n+1
+    }
+    
+    grid.arrange(grobs=plist)
+  })
 
-  curdata <- reactiveValues(matriz=matrix(ncol=0,nrow = 1000))
+  observeEvent(input$agg,{
+    curdata$nomF <- c(curdata$nomF,input$nomf)
+    df <- as.data.frame(curdata$matriz)
+    curdata$variable2=eval(parse(text=input$form),envir = df)
+    curdata$matrizCalc <- cbind(curdata$matrizCalc,curdata$variable2)
+    colnames(curdata$matrizCalc)<-curdata$nomF
+    
+  })
+  
   observeEvent(input$agregar,{
     curdata$nombre <- c(curdata$nombre,input$nomd)
     curdata$variable1 <- switch(input$select,
@@ -127,13 +156,14 @@ server <- function(input, output, session) {
     colnames(curdata$matriz)<-curdata$nombre
     
   })
+  
   output$texto <- renderText({
     # req(curdata$nombre)
-    req(input$form)
-    curdata$nombre
-    input$agregar
-    df <- as.data.frame(curdata$matriz)
-    eval(parse(text=input$form),envir = df)
+    # req(input$form)
+    # curdata$nombre
+    # input$agregar
+    # df <- as.data.frame(curdata$matriz)
+    # eval(parse(text=input$form),envir = df)
     })
 }
 
