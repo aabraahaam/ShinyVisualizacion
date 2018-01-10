@@ -3,8 +3,8 @@ library(shinydashboard)
 library(gridExtra)
 library(ggplot2)
 library(triangle)
-library(dbplyr)
 library(dplyr)
+library(plotly)
 #ui----
 ui <- dashboardPage(
   dashboardHeader(),
@@ -85,8 +85,10 @@ ui <- dashboardPage(
   ),
   #Cuerpo----
   dashboardBody(
-    plotOutput('grafica'),
-    plotOutput('grafica2'),
+    h1('Variables'),
+    plotlyOutput('grafica'),
+    h1('Cálculos'),
+    plotlyOutput('grafica2'),
     verbatimTextOutput('texto')
   )
 )
@@ -97,7 +99,7 @@ server <- function(input, output, session) {
   curdata <- reactiveValues(matriz=matrix(ncol=0,nrow = 1000),
                             matrizCalc=matrix(ncol=0,nrow = 1000) )
   
-  output$grafica <- renderPlot({
+  output$grafica <- renderPlotly({
     
     req(curdata$variable1)
     df <- as.data.frame(curdata$matriz)
@@ -105,16 +107,23 @@ server <- function(input, output, session) {
     n<-1
      for (i in curdata$nombre){
        print(n)
-       g <-ggplot(df,aes_string(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
+       print(i)
+       print(colnames(df))
+       g <- plot_ly(df, x= df[,i], type = "histogram",name=i) %>% layout(
+         title='Variables'
+         )
+       # g <-ggplot(df,aes_string(x=i)) + geom_histogram(bins = 20) + xlab('Normal')
+       # g<-ggplotly(g)
        plist[[n]] <- g
        n <- n+1
      }
 
-     grid.arrange(grobs=plist)
+     #grid.arrange(grobs=plist)
+     subplot(plist)
     
   })
   
-  output$grafica2 <- renderPlot({
+  output$grafica2 <- renderPlotly({
     
     req(curdata$variable2)
     df <- as.data.frame(curdata$matrizCalc)
@@ -122,12 +131,16 @@ server <- function(input, output, session) {
     n<-1
     for (i in curdata$nomF){
       print(n)
-      g <-ggplot(df,aes_string(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
+      g <- plot_ly(df, x= df[,i], type = "histogram",name=i) %>% layout(
+        title='Cálculos'
+      )
+      # g <-ggplot(df,aes_string(x=i)) + geom_histogram(bins = 20) + ggtitle(i)
       plist[[n]] <- g
       n <- n+1
     }
     
-    grid.arrange(grobs=plist)
+    # grid.arrange(grobs=plist)
+    subplot(plist)
   })
 
   observeEvent(input$agg,{
