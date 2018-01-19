@@ -104,13 +104,13 @@ ui <- dashboardPage(skin='green',
                     actionButton('agg','Agregar',icon = icon('plus'))
            ),
            tabPanel('Eliminar',
-                    actionButton('eliminar','Eliminar',icon = icon('trash')))
+                    actionButton('eliminar','Eliminar',icon = icon('trash')),
+                    htmlOutput('lista'))
     )),
     fluidRow(
     ###graficas----
     column(6,plotlyOutput('grafica')),
-    column(6,plotlyOutput('grafica2')),
-    verbatimTextOutput('texto')
+    column(6,plotlyOutput('grafica2'))
     ),
     fluidRow(
       br(),
@@ -122,12 +122,15 @@ ui <- dashboardPage(skin='green',
 
 #server----
 server <- function(input, output, session) {
+  
   curdata <- reactiveValues(matriz=matrix(ncol=0,nrow = 10000),
                             matrizCalc=matrix(ncol=0,nrow = 10000) )
   
   output$grafica <- renderPlotly({
     
     req(curdata$variable1)
+    req(curdata$matriz)
+    req(curdata$nombre)
     df <- as.data.frame(curdata$matriz)
     plist <-list()
     n<-1
@@ -148,6 +151,7 @@ server <- function(input, output, session) {
   output$grafica2 <- renderPlotly({
 
     req(curdata$variable2)
+    req(curdata$matrizCalc)
     df <- as.data.frame(curdata$matrizCalc)
     plist <-list()
     n<-1
@@ -198,20 +202,30 @@ server <- function(input, output, session) {
     
   })
   
-  output$texto <- renderText({
-  })
+  # output$infoVar <- renderInfoBox({
+  #   req(curdata$matriz)
+  #   a<-t(colnames(curdata$matriz))
+  #   infoBox('Variables',a,icon = icon('list'))
+  # })
+  # 
+  # output$infoCal <- renderInfoBox({
+  #   req(curdata$matrizCalc)
+  #   a <- t(colnames(curdata$matrizCalc))
+  #   infoBox('Cálculos',a,icon = icon('list'),color = 'red')
+  # })
   
-  output$infoVar <- renderInfoBox({
-    req(curdata$matriz)
-    a<-t(colnames(curdata$matriz))
-    infoBox('Variables',a,icon = icon('list'))
+  observeEvent(input$eliminar,{
+    n <-which( colnames(curdata$matriz)==input$eliminarVar )
+    curdata$matriz <- curdata$matriz[,-n] 
+    curdata$nombre <- curdata$nombre[,-n] 
   })
-  
-  output$infoCal <- renderInfoBox({
-    req(curdata$matrizCalc)
-    a <- t(colnames(curdata$matrizCalc))
-    infoBox('Cálculos',a,icon = icon('list'),color = 'red')
+
+  output$lista <- renderUI({
+    req(curdata$nombre)
+    selectInput('eliminarVar', 'Eliminar',curdata$nombre)
   })
 }
+
+
 
 shinyApp(ui, server)
